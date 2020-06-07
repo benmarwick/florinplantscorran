@@ -1,5 +1,5 @@
 Package: florinplantscorran
-Title: What the Package Does (One Line, Title Case)
+Title: Correspondence Analysis of Plant Remains from Madjedbebe
 Version: 0.0.0.9000
 Authors@R:
     person(given = "Ben",
@@ -7,7 +7,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "benmarwick@gmail.com",
            comment = c(ORCID = "0000-0001-7879-4531"))
-Description: What the package does (one paragraph)
+Description: Correspondence Analysis of Plant Remains from Madjedbebe
 License: MIT + file LICENSE
 ByteCompile: true
 Encoding: UTF-8
@@ -30,3 +30,5 @@ Imports: bookdown,
     tidyverse (>= 1.3.0)
 Suggests: devtools,
     git2r
+URL: https://github.com/benmarwick/florinplantscorran
+BugReports: https://github.com/benmarwick/florinplantscorran/issues
