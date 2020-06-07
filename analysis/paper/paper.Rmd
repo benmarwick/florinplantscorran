@@ -1,0 +1,329 @@
+---
+title: "Correspondence Analysis of Plant Remains from Madjedbebe"
+author:
+  - Anna Florin
+  - Ben Marwick
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+    bookdown::word_document2:
+      fig_caption: yes
+      reference_docx: "../templates/template.docx" # Insert path for the DOCX file
+bibliography: references.bib
+csl: "../templates/journal-of-archaeological-science.csl" # Insert path for the bib-style
+---
+
+<!-- The following code chunk defines some general settings how code chunks should behave. -->
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  echo = TRUE,
+  comment = "#>",
+  fig.path = "../figures/",
+  dpi = 300
+)
+```
+
+<!-- The actual document text starts here: -->
+
+### Read in the data and prepare it
+
+```{r}
+cordata <- readxl::read_excel(here::here("analysis/data/raw_data/Correspondence Analysis.xlsx"))
+
+library(FactoMineR)
+library(factoextra)
+library(tidyverse)
+
+# select numeric columns
+cordata_num <- 
+cordata %>% 
+  unite(col = "ellipse", c(`Phase-num`, `context-type`)) %>% 
+  dplyr::select(where(is.numeric), ellipse)
+
+```
+
+### Compute the correspondence analysis
+
+```{r fig.show='hide'}
+library(ca)
+
+ca.fit <- ca(cordata_num[-ncol(cordata_num)])
+ca.plot <- plot(ca.fit)
+
+ca.dims1 <- tibble(dim1 = ca.plot$rows[,1], 
+                  dim2 = ca.plot$rows[,2],
+                  Phase = as.factor(cordata$`Phase-num`),
+                  Context = cordata$`context-type`)
+
+ca.dims2 <- tibble(dim1 = ca.plot$cols[,1], 
+                   dim2 = ca.plot$cols[,2],
+                   labels = colnames(cordata_num)[-ncol(cordata_num)])
+```
+
+### Visualise the CA with plots
+
+```{r}
+library(ggrepel)
+ca_plot_with_ellipse <- 
+ggplot() +
+      stat_ellipse(data = ca.dims1,
+       aes(dim1,
+           dim2,
+           colour = Phase)) +
+  geom_point(data = ca.dims1,
+       aes(dim1,
+           dim2,
+           shape =  Context,
+           colour = Phase),
+       size = 3) +
+    geom_point(data = ca.dims2,
+       aes(dim1,
+           dim2),
+       colour = "black",
+       shape = 20) +
+    geom_text_repel(data = ca.dims2,
+       aes(dim1,
+           dim2,
+           label = labels),
+       size = 3,
+       bg.colour = "white",
+       bg.r = 0.1,
+       force = 100,
+       segment.color = "grey80",
+       max.overlaps = 20,
+       min.segment.length = 0.1,
+       colour = "blue") +
+  labs(x = "Dimension 1",
+       y = "Dimension 2") +
+  scale_colour_discrete() +
+  scale_x_continuous(limits = c(-1, 4)) +
+  scale_y_continuous(limits = c(-5, 9)) +
+  theme_minimal()
+
+ggsave(here::here("analysis/figures/ca-ellipse-plot.png"),
+       dpi = 300)
+
+ggsave(here::here("analysis/figures/ca-ellipse-plot.svg"))
+```
+
+
+```{r fig.show='hide'}
+
+# checking the two plot methods
+library(cowplot)
+
+plot_grid(ca_plot_with_ellipse, 
+          ~{plot(ca.fit)})
+```
+
+
+```{r}
+
+ca_plot_zoom <- 
+  ggplot() +
+  geom_point(data = ca.dims1,
+       aes(dim1,
+           dim2,
+           shape =  Context,
+           colour = Phase),
+       size = 2) +
+    geom_point(data = ca.dims2,
+       aes(dim1,
+           dim2),
+       colour = "black",
+       shape = 20) +
+    geom_text_repel(data = ca.dims2,
+       aes(dim1,
+           dim2,
+           label = labels),
+       size = 2,
+       bg.colour = "white",
+       bg.r = 0.1,
+       force = 100,
+       segment.color = "grey80",
+       max.overlaps = 20,
+       min.segment.length = 0.1,
+       colour = "blue") +
+  scale_colour_discrete() +
+  theme_minimal() +
+  xlim(-1, 1.0) + 
+  ylim(-0.5, 0.5) +
+    labs(x = "",
+         y = "")  +
+  guides(colour = FALSE,
+         shape = FALSE) +
+    theme_bw(base_size = 6)
+
+ggsave(here::here("analysis/figures/ca-zoom-plot.png"),
+       dpi = 300)
+
+ggsave(here::here("analysis/figures/ca-zoom-plot.svg"))
+```
+
+
+```{r result='hide', fig.show='hide'}
+# combine plots
+library(cowplot)
+
+ggdraw(ca_plot_with_ellipse + theme_half_open(12)) +
+  draw_plot(ca_plot_zoom, 
+            x = 0.07, 
+            y = 0.67, 
+            width = 0.33, 
+            height = 0.33) 
+
+ggsave(here::here("analysis/figures/ca-inset-plot.png"),
+       height = 8,
+       width = 11,
+       dpi = 300)
+
+ggsave(here::here("analysis/figures/ca-inset-plot.svg"),
+       height = 8,
+       width = 11)
+
+```
+
+
+```{r}
+knitr::include_graphics(here::here("analysis/figures/ca-inset-plot.png"))
+```
+
+
+
+# Other methods of CA that we explored
+
+```{r eval = FALSE}
+library(anacor)
+
+ndim <- 1
+res <- anacor(cordata_num[-ncol(cordata_num)], 
+              #ndim = ndim, 
+              scaling = rep("Benzecri", ndim))
+res
+plot(res)
+
+
+anacor.dims1 <- tibble(dim1 = res$row.scores[,1], 
+                  dim2 = res$row.scores[,2],
+                  Phase = as.factor(cordata$`Phase-num`),
+                  Context = cordata$`context-type`)
+
+anacor.dims2 <- tibble(dim1 = res$col.scores [,1], 
+                   dim2 = res$col.scores [,2],
+                   labels = colnames(cordata_num)[-ncol(cordata_num)])
+
+library(ggrepel)
+anacor_plot_with_ellipse <- 
+ggplot() +
+      stat_ellipse(data = anacor.dims1,
+       aes(dim1,
+           dim2,
+           colour = Phase)) +
+  geom_point(data = anacor.dims1,
+       aes(dim1,
+           dim2,
+           shape =  Context,
+           colour = Phase),
+       size = 3) +
+    geom_point(data = anacor.dims2,
+       aes(dim1,
+           dim2),
+       colour = "black",
+       shape = 20) +
+    geom_text_repel(data = anacor.dims2,
+       aes(dim1,
+           dim2,
+           label = labels),
+       size = 3,
+       bg.colour = "white",
+       bg.r = 0.1,
+       force = 100,
+       segment.color = "grey80",
+       max.overlaps = 20,
+       min.segment.length = 0.1,
+       colour = "blue") +
+  labs(x = "Dimension 1",
+       y = "Dimension 2") +
+  scale_colour_discrete() +
+  coord_fixed() +
+  theme_minimal()
+
+
+
+```
+
+
+```{r eval = FALSE}
+library(CAinterprTools)
+
+caPlot_data <- 
+caPlot(cordata_num[-ncol(cordata_num)],1,2,adv.labls=FALSE)
+
+caPlot.dims1 <- tibble(dim1 = caPlot_data[caPlot_data$Categories == 'rows',]$coord.1Dim, 
+                  dim2 =      caPlot_data[caPlot_data$Categories == 'rows',]$coord.2Dim,
+                  Phase = as.factor(cordata$`Phase-num`),
+                  Context = cordata$`context-type`)
+
+caPlot.dims2 <- tibble(dim1 = caPlot_data[caPlot_data$Categories == 'columns',]$coord.1Dim, 
+                   dim2 =     caPlot_data[caPlot_data$Categories == 'columns',]$coord.2Dim,
+                   labels = colnames(cordata_num)[-ncol(cordata_num)])
+
+library(ggrepel)
+caPlot_plot_with_ellipse <- 
+ggplot() +
+      stat_ellipse(data = caPlot.dims1,
+       aes(dim1,
+           dim2,
+           colour = Phase)) +
+  geom_point(data = caPlot.dims1,
+       aes(dim1,
+           dim2,
+           shape =  Context,
+           colour = Phase),
+       size = 3) +
+    geom_point(data = caPlot.dims2,
+       aes(dim1,
+           dim2),
+       colour = "black",
+       shape = 20) +
+    geom_text_repel(data = caPlot.dims2,
+       aes(dim1,
+           dim2,
+           label = labels),
+       size = 3,
+       bg.colour = "white",
+       bg.r = 0.1,
+       force = 100,
+       segment.color = "grey80",
+       max.overlaps = 20,
+       min.segment.length = 0.1,
+       colour = "blue") +
+  labs(x = "Dimension 1",
+       y = "Dimension 2") +
+  scale_colour_discrete() +
+  coord_fixed() +
+  theme_minimal()
+
+```
+
+
+\newpage
+
+### Colophon
+
+This report was generated on `r Sys.time()` using the following computational environment and dependencies: 
+
+```{r colophon, cache = FALSE}
+# which R packages and versions?
+if ("devtools" %in% installed.packages()) devtools::session_info()
+```
+
+The current Git commit details are:
+
+```{r}
+# what commit is this file at? 
+if ("git2r" %in% installed.packages() & git2r::in_repository(path = ".")) git2r::repository(here::here())  
+```
