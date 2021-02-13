@@ -1,5 +1,5 @@
 ---
-title: "Correspondence Analysis of Plant Remains from Madjedbebe"
+title: "Correspondence analysis to explore temporal variability in the Madjedbebe plant macrofossil assemblage"
 author:
   - Anna Florin
   - Ben Marwick
@@ -99,7 +99,7 @@ ggplot() +
   labs(x = "Dimension 1",
        y = "Dimension 2") +
   scale_colour_discrete() +
-  scale_x_continuous(limits = c(-1, 4)) +
+  scale_x_continuous(limits = c(-5, 5)) +
   scale_y_continuous(limits = c(-5, 9)) +
   theme_minimal()
 
@@ -107,16 +107,6 @@ ggsave(here::here("analysis/figures/ca-ellipse-plot.png"),
        dpi = 300)
 
 ggsave(here::here("analysis/figures/ca-ellipse-plot.svg"))
-```
-
-
-```{r fig.show='hide'}
-
-# checking the two plot methods
-library(cowplot)
-
-plot_grid(ca_plot_with_ellipse, 
-          ~{plot(ca.fit)})
 ```
 
 
@@ -189,125 +179,9 @@ ggsave(here::here("analysis/figures/ca-inset-plot.svg"),
 
 ```{r}
 knitr::include_graphics(here::here("analysis/figures/ca-inset-plot.png"))
-```
-
-
-
-# Other methods of CA that we explored
-
-```{r eval = FALSE}
-library(anacor)
-
-ndim <- 1
-res <- anacor(cordata_num[-ncol(cordata_num)], 
-              #ndim = ndim, 
-              scaling = rep("Benzecri", ndim))
-res
-plot(res)
-
-
-anacor.dims1 <- tibble(dim1 = res$row.scores[,1], 
-                  dim2 = res$row.scores[,2],
-                  Phase = as.factor(cordata$`Phase-num`),
-                  Context = cordata$`context-type`)
-
-anacor.dims2 <- tibble(dim1 = res$col.scores [,1], 
-                   dim2 = res$col.scores [,2],
-                   labels = colnames(cordata_num)[-ncol(cordata_num)])
-
-library(ggrepel)
-anacor_plot_with_ellipse <- 
-ggplot() +
-      stat_ellipse(data = anacor.dims1,
-       aes(dim1,
-           dim2,
-           colour = Phase)) +
-  geom_point(data = anacor.dims1,
-       aes(dim1,
-           dim2,
-           shape =  Context,
-           colour = Phase),
-       size = 3) +
-    geom_point(data = anacor.dims2,
-       aes(dim1,
-           dim2),
-       colour = "black",
-       shape = 20) +
-    geom_text_repel(data = anacor.dims2,
-       aes(dim1,
-           dim2,
-           label = labels),
-       size = 3,
-       bg.colour = "white",
-       bg.r = 0.1,
-       force = 100,
-       segment.color = "grey80",
-       max.overlaps = 20,
-       min.segment.length = 0.1,
-       colour = "blue") +
-  labs(x = "Dimension 1",
-       y = "Dimension 2") +
-  scale_colour_discrete() +
-  coord_fixed() +
-  theme_minimal()
-
-
 
 ```
 
-
-```{r eval = FALSE}
-library(CAinterprTools)
-
-caPlot_data <- 
-caPlot(cordata_num[-ncol(cordata_num)],1,2,adv.labls=FALSE)
-
-caPlot.dims1 <- tibble(dim1 = caPlot_data[caPlot_data$Categories == 'rows',]$coord.1Dim, 
-                  dim2 =      caPlot_data[caPlot_data$Categories == 'rows',]$coord.2Dim,
-                  Phase = as.factor(cordata$`Phase-num`),
-                  Context = cordata$`context-type`)
-
-caPlot.dims2 <- tibble(dim1 = caPlot_data[caPlot_data$Categories == 'columns',]$coord.1Dim, 
-                   dim2 =     caPlot_data[caPlot_data$Categories == 'columns',]$coord.2Dim,
-                   labels = colnames(cordata_num)[-ncol(cordata_num)])
-
-library(ggrepel)
-caPlot_plot_with_ellipse <- 
-ggplot() +
-      stat_ellipse(data = caPlot.dims1,
-       aes(dim1,
-           dim2,
-           colour = Phase)) +
-  geom_point(data = caPlot.dims1,
-       aes(dim1,
-           dim2,
-           shape =  Context,
-           colour = Phase),
-       size = 3) +
-    geom_point(data = caPlot.dims2,
-       aes(dim1,
-           dim2),
-       colour = "black",
-       shape = 20) +
-    geom_text_repel(data = caPlot.dims2,
-       aes(dim1,
-           dim2,
-           label = labels),
-       size = 3,
-       bg.colour = "white",
-       bg.r = 0.1,
-       force = 100,
-       segment.color = "grey80",
-       max.overlaps = 20,
-       min.segment.length = 0.1,
-       colour = "blue") +
-  labs(x = "Dimension 1",
-       y = "Dimension 2") +
-  scale_colour_discrete() +
-  coord_fixed() +
-  theme_minimal()
-
-```
 
 
 \newpage
