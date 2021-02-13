@@ -27,7 +27,8 @@ Imports: bookdown,
     knitr,
     readxl,
     rmarkdown,
-    tidyverse
+    tidyverse,
+    svglite
 Suggests: devtools,
     git2r
 URL: https://github.com/benmarwick/florinplantscorran
