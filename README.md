@@ -5,8 +5,7 @@
 
 <!-- badges: start -->
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh///master?urlpath=rstudio)
-[![Knit Rmd in
-Docker](https://github.com/benmarwick/florinplantscorran/workflows/knit-Rmd-in-docker/badge.svg)](https://github.com/benmarwick/florinplantscorran/actions)
+[![Knit-Rmd-in-Docker](https://github.com/benmarwick/florinplantscorran/workflows/knit-Rmd-in-docker/badge.svg)](https://github.com/benmarwick/florinplantscorran/actions)
 <!-- badges: end -->
 
 This repository contains the data and code for our paper:
